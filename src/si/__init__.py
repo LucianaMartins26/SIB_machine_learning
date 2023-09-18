@@ -1,9 +1,11 @@
 __author__ = "João Correia"
+__coauthor__ = "Luciana Martins"
 __credits__ = ["João Correia, Fernando Cruz", "Vítor Pereira"]
 __license__ = "Apache License 2.0"
 __version__ = "0.0.1"
 __maintainer__ = "João Correia"
-__email__ = "jfscorreia95@gmail.com"
+__emailauthor__ = "jfscorreia95@gmail.com"
+__emailcoauthor__ = "lucianacmartins8@gmail.com"
 
 # -----------------------------------------------------------------------------------
 # This package is heavily inspired and adapted from
