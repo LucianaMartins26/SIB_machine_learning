@@ -1,4 +1,4 @@
-from typing import Tuple, Sequence, Union, List
+from typing import Tuple, Sequence, List
 
 import numpy as np
 import pandas as pd
@@ -35,7 +35,7 @@ class Dataset:
         self.features = features
         self.label = label
 
-    def shape(self) -> Tuple[int, int]:
+    def shape(self) -> Tuple[int, ...]:
         """
         Returns the shape of the dataset
         Returns
@@ -271,8 +271,8 @@ if __name__ == '__main__':
     print(dataset.get_max())
     print(dataset.summary())
     X = np.array([[1.0, 2.0, 3.0],
-                       [4.0, np.nan, 6.0],
-                       [7.0, 8.0, 9.0]])
+                  [4.0, np.nan, 6.0],
+                  [7.0, 8.0, 9.0]])
 
     y = np.array([0, 1, 2])
 

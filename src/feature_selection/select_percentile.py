@@ -78,7 +78,7 @@ class SelectPercentile:
             A labeled dataset with the k*percentile higher scoring features.
         """
 
-        wanted_features = (len(dataset.features))*(self.percentile/100)
+        wanted_features = (len(dataset.features)) * (self.percentile / 100)
         sorted_num = np.argsort(self.F)[-int(wanted_features):]
         X = dataset.X[:, sorted_num]
         features = np.array(dataset.features)[sorted_num]
@@ -105,13 +105,12 @@ class SelectPercentile:
 
 
 if __name__ == '__main__':
-
     data = Dataset(X=np.array([[0, 2, 0, 3],
-                                  [0, 1, 4, 3],
-                                  [0, 1, 1, 3]]),
-                      y=np.array([0, 1, 0]),
-                      features=["f1", "f2", "f3", "f4"],
-                      label="y")
+                               [0, 1, 4, 3],
+                               [0, 1, 1, 3]]),
+                   y=np.array([0, 1, 0]),
+                   features=["f1", "f2", "f3", "f4"],
+                   label="y")
 
     select_percentile = SelectPercentile(percentile=50)
     select_percentile.fit(data)
