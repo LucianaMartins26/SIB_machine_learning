@@ -1,37 +1,42 @@
 import numpy as np
-
-from SIB_machine_learning.src.si.data.dataset import Dataset
 from SIB_machine_learning.src.si.metrics.mse import mse
 
 
 class RidgeRegressionLeastSquares:
-    # implement class
-    pass
-    # This is how you can test it against sklearn to check if everything is fine
+    def __init__(self, l2_penalty=1.0, scale=False):
+        self.l2_penalty = l2_penalty
+        self.scale = scale
+        self.theta = None
+        self.theta_zero = None
+        self.mean = None
+        self.std = None
 
+    def fit(self, X, y):
+        if self.scale:
+            self.mean = np.mean(X, axis=0)
+            self.std = np.std(X, axis=0)
+            X = (X - self.mean) / self.std
 
-if __name__ == '__main__':
-    # make a linear dataset
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    dataset_ = Dataset(X=X, y=y)
+        X = np.c_[np.ones(X.shape[0]), X]
 
-    # fit the model
-    model = RidgeRegressionLeastSquares(alpha=2.0)
-    model.fit(dataset_)
-    print(model.theta)
-    print(model.theta_zero)
+        penalty_matrix = self.l2_penalty * np.eye(X.shape[1])
+        penalty_matrix[0, 0] = 0
 
-    # compute the score
-    print(model.score(dataset_))
+        self.theta = np.linalg.inv(X.T @ X + penalty_matrix) @ X.T @ y
+        self.theta_zero = self.theta[0]
+        self.theta = self.theta[1:]
 
-    # compare with sklearn
-    from sklearn.linear_model import Ridge
+    def predict(self, X):
+        if self.scale:
+            X = (X - self.mean) / self.std
 
-    model = Ridge(alpha=2.0)
-    # scale data
-    X = (dataset_.X - np.nanmean(dataset_.X, axis=0)) / np.nanstd(dataset_.X, axis=0)
-    model.fit(X, dataset_.y)
-    print(model.coef_)  # should be the same as theta
-    print(model.intercept_)  # should be the same as theta_zero
-    print(mse(dataset_.y, model.predict(X)))
+        X = np.c_[np.ones(X.shape[0]), X]
+        thetas = np.r_[self.theta_zero, self.theta]
+
+        y_pred = X.dot(thetas)
+        return y_pred
+
+    def score(self, X, y):
+        y_pred = self.predict(X)
+        score = mse(y, y_pred)
+        return score
