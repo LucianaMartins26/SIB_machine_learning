@@ -3,7 +3,7 @@ from typing import Callable
 import numpy as np
 
 from SIB_machine_learning.src.si.data.dataset import Dataset
-from SIB_machine_learning.src.statistics.euclidean_distance import euclidean_distance
+from SIB_machine_learning.src.si.statistics.euclidean_distance import euclidean_distance
 
 
 class KMeans:

@@ -1,13 +1,15 @@
 import numpy as np
 
 from SIB_machine_learning.src.si.data.dataset import Dataset
-from SIB_machine_learning.src.si.metrics.mse import mse
+from SIB_machine_learning.src.si.metrics.accuracy import accuracy
+from SIB_machine_learning.src.si.model_selection.split import train_test_split
+from SIB_machine_learning.src.si.statistics.sigmoid_function import sigmoid_function
 
 
-class RidgeRegression:
+class LogisticRegression:
     """
-    The RidgeRegression is a linear model using the L2 regularization.
-    This model solves the linear regression problem using an adapted Gradient Descent technique
+    The LogisticRegression is a logistic model using the L2 regularization.
+    This model solves the logistic regression problem using an adapted Gradient Descent technique
 
     Parameters
     ----------
@@ -17,19 +19,15 @@ class RidgeRegression:
         The learning rate
     max_iter: int
         The maximum number of iterations
-    scale: bool
-        Whether to scale the dataset or not
 
     Attributes
     ----------
     theta: np.array
-        The model parameters, namely the coefficients of the linear model.
-        For example, x0 * theta[0] + x1 * theta[1] + ...
+        The model parameters, namely the coefficients of the logistic model.
+        For example, sigmoid(x0 * theta[0] + x1 * theta[1] + ...)
     theta_zero: float
-        The model parameter, namely the intercept of the linear model.
-        For example, theta_zero * 1
+        The intercept of the logistic model
     """
-
     def __init__(self, l2_penalty: float = 1, alpha: float = 0.001, max_iter: int = 1000,
                  patience: int = 5, scale: bool = True):
         """
@@ -61,7 +59,7 @@ class RidgeRegression:
         self.std = None
         self.cost_history = {}
 
-    def fit(self, dataset: Dataset) -> 'RidgeRegression':
+    def fit(self, dataset: Dataset) -> 'LogisticRegression':
         """
         Fit the model to the dataset
 
@@ -72,7 +70,7 @@ class RidgeRegression:
 
         Returns
         -------
-        self: RidgeRegression
+        self: LogisticRegression
             The fitted model
         """
         if self.scale:
@@ -97,13 +95,16 @@ class RidgeRegression:
             # predicted y
             y_pred = np.dot(X, self.theta) + self.theta_zero
 
-            # computing and updating the gradient with the learning rate
+            # apply sigmoid function
+            y_pred = sigmoid_function(y_pred)
+
+            # compute the gradient using the learning rate
             gradient = (self.alpha / m) * np.dot(y_pred - dataset.y, X)
 
-            # computing the penalty
+            # compute the penalty
             penalization_term = self.theta * (1 - self.alpha * (self.l2_penalty / m))
 
-            # updating the model parameters
+            # update the model parameters
             self.theta = penalization_term - gradient
             self.theta_zero = self.theta_zero - (self.alpha * (1 / m)) * np.sum(y_pred - dataset.y)
 
@@ -132,7 +133,13 @@ class RidgeRegression:
             The predictions of the dataset
         """
         X = (dataset.X - self.mean) / self.std if self.scale else dataset.X
-        return np.dot(X, self.theta) + self.theta_zero
+        predictions = sigmoid_function(np.dot(X, self.theta) + self.theta_zero)
+
+        # convert the predictions to 0 or 1 (binarization)
+        mask = predictions >= 0.5
+        predictions[mask] = 1
+        predictions[~mask] = 0
+        return predictions
 
     def score(self, dataset: Dataset) -> float:
         """
@@ -149,7 +156,7 @@ class RidgeRegression:
             The Mean Square Error of the model
         """
         y_pred = self.predict(dataset)
-        return mse(dataset.y, y_pred)
+        return accuracy(dataset.y, y_pred)
 
     def cost(self, dataset: Dataset) -> float:
         """
@@ -165,25 +172,33 @@ class RidgeRegression:
         cost: float
             The cost function of the model
         """
-        y_pred = self.predict(dataset)
-        return (np.sum((y_pred - dataset.y) ** 2) + (self.l2_penalty * np.sum(self.theta ** 2))) / (2 * len(dataset.y))
+        predictions = sigmoid_function(np.dot(dataset.X, self.theta) + self.theta_zero)
+        cost = (dataset.y * np.log(predictions)) + (1 - dataset.y) * np.log(1 - predictions)
+        cost = np.sum(cost) * (-1 / dataset.shape()[0])
+        cost = cost + (self.l2_penalty * np.sum(self.theta ** 2) / (2 * dataset.shape()[0]))
+        return cost
 
 
 if __name__ == '__main__':
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    dataset_ = Dataset(X=X, y=y)
+    # load and split the dataset
+    dataset_ = Dataset.from_random(600, 100, 2)
+    dataset_train, dataset_test = train_test_split(dataset_, test_size=0.2)
 
-    model = RidgeRegression()
-    model.fit(dataset_)
+    # fit the model
+    model = LogisticRegression(l2_penalty=1, alpha=0.001, max_iter=1000)
+    model.fit(dataset_train)
 
-    print(f"Parameters: {model.theta}")
+    print(model.theta)
+    print(model.theta_zero)
 
-    score = model.score(dataset_)
+    print(model.predict(dataset_test))
+
+    # compute the score
+    score = model.score(dataset_test)
     print(f"Score: {score}")
 
-    cost = model.cost(dataset_)
-    print(f"Cost: {cost}")
+    # plot the cost history
+    import matplotlib.pyplot as plt
 
-    y_pred_ = model.predict(Dataset(X=np.array([[3, 5]])))
-    print(f"Predictions: {y_pred_}")
+    plt.plot(list(model.cost_history.keys()), list(model.cost_history.values()))
+    plt.show()

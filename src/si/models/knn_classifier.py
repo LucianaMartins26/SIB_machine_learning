@@ -3,8 +3,8 @@ from typing import Callable
 import numpy as np
 
 from SIB_machine_learning.src.si.data.dataset import Dataset
-from SIB_machine_learning.src.statistics.euclidean_distance import euclidean_distance
-from SIB_machine_learning.src.metrics.accuracy import accuracy
+from SIB_machine_learning.src.si.statistics.euclidean_distance import euclidean_distance
+from SIB_machine_learning.src.si.metrics.accuracy import accuracy
 
 
 class KNNClassifier:

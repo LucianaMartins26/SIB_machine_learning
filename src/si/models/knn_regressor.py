@@ -1,8 +1,10 @@
 from typing import Callable
 
+import numpy as np
+
 from SIB_machine_learning.src.si.data.dataset import Dataset
-from SIB_machine_learning.src.statistics.euclidean_distance import euclidean_distance
-from SIB_machine_learning.src.metrics.rmse import rmse
+from SIB_machine_learning.src.si.statistics.euclidean_distance import euclidean_distance
+from SIB_machine_learning.src.si.metrics.rmse import rmse
 
 
 class KNNRegressor:
@@ -19,31 +21,21 @@ class KNNRegressor:
         self.dataset = dataset
 
     def predict(self, dataset: Dataset):
-        """
-        Calculate the distance between each sample and various samples in the training dataset;
-        Obtain the indexes of the k most similar examples (shortest distance);
-        Use the previous indexes to retrieve the corresponding values in Y;
-        Calculate the average of the values obtained in step 3;
-        Apply steps 1, 2, 3, and 4 to all samples in the testing dataset.
-        """
         predictions = []
 
         for x in dataset.X:
             distances = []
 
-            for x_train in self.dataset.X:
-                distances.append(self.distance(x, x_train))
+            for i, x_train in enumerate(self.dataset.X):
+                distances.append((i, self.distance(x, x_train)))
 
-            indexes = sorted(range(len(distances)), key=lambda i: distances[i])[:self.k]
-            y = [self.dataset.Y[i] for i in indexes]
-            predictions.append(sum(y) / len(y))
-
-        return predictions
+            distances.sort(key=lambda x: x[1][0])
+            k_nearest = distances[:self.k]
+            y_k_nearest = [self.dataset.y[i] for i, _ in k_nearest]
+            predictions.append(np.mean(y_k_nearest))
+        return np.array(predictions)
 
     def score(self, dataset: Dataset):
-        """
-        Get the predictions (y_pred);
-        Calculate the rmse between actual values and predictions.
-        """
+        """ calculates the error between the estimated values and the real ones (rmse)"""
         y_pred = self.predict(dataset)
         return rmse(dataset.y, y_pred)
