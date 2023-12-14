@@ -18,6 +18,9 @@ class OneHotEncoder:
 
         self.alphabet = sorted(self.alphabet)
 
+        # Add a special token for space
+        self.alphabet.append(' ')
+
         self.char_to_index = {char: index for index, char in enumerate(self.alphabet)}
         self.index_to_char = {index: char for index, char in enumerate(self.alphabet)}
 
@@ -25,11 +28,12 @@ class OneHotEncoder:
             self.max_length = max([len(seq) for seq in data])
 
     def transform(self, data):
-
         data = [seq[:self.max_length] for seq in data]
         data = [self.padder(seq) for seq in data]
 
-        data = [[self.char_to_index[char] for char in seq] for seq in data]
+        # Update to handle spaces
+        data = [[self.char_to_index[char] if char in self.char_to_index else self.char_to_index[' '] for char in seq]
+                for seq in data]
 
         data = [to_categorical(seq, num_classes=len(self.alphabet)) for seq in data]
 
@@ -44,3 +48,18 @@ class OneHotEncoder:
         data = [[self.index_to_char[index] for index in seq] for seq in data]
         return data
 
+
+if __name__ == '__main__':
+    sequences = ['abc', 'defg', 'hij', 'klmnop']
+
+    encoder = OneHotEncoder(padder=lambda x: x + ' ' * (encoder.max_length - len(x)), max_length=None)
+
+    encoded_data = encoder.fit_transform(sequences)
+
+    print("Encoded Data:")
+    print(encoded_data)
+
+    decoded_data = encoder.inverse_transform(encoded_data)
+
+    print("\nDecoded Data:")
+    print(decoded_data)
