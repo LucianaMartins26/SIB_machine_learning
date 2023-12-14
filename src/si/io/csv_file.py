@@ -84,3 +84,20 @@ def write_csv(filename: str,
         data[dataset.label] = dataset.y
 
     data.to_csv(filename, sep=sep, index=False)
+
+
+def read_data_file(filename: str,
+                   sep: str = ',',
+                   label: bool = False) -> Dataset:
+
+    return read_csv(filename, sep=sep, features=True, label=label)
+
+
+def write_data_file(filename: str,
+                    dataset: Dataset,
+                    sep: str = ',',
+                    label: bool = False) -> None:
+
+    return write_csv(filename, dataset, sep=sep, features=True, label=label)
+
+

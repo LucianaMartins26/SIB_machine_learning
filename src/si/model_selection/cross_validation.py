@@ -3,6 +3,7 @@ from typing import List
 import numpy as np
 
 from SIB_machine_learning.src.si.data.dataset import Dataset
+from SIB_machine_learning.src.si.models.knn_classifier import KNNClassifier
 
 
 def k_fold_cross_validation(model, dataset: Dataset, scoring: callable = None, cv: int = 3,
@@ -106,27 +107,18 @@ def leave_one_out_cross_validation(model, dataset: Dataset, scoring: callable = 
 
 
 if __name__ == '__main__':
-    # import dataset
-    from SIB_machine_learning.src.si.data.dataset import Dataset
-    from SIB_machine_learning.src.si.models.knn_classifier import KNNClassifier
 
-    # load and split the dataset
     dataset_ = Dataset.from_random(600, 100, 2)
 
-    # initialize the KNN
     knn = KNNClassifier(k=3)
 
-    # cross validate the model
     scores_ = k_fold_cross_validation(knn, dataset_, cv=5, seed=1)
 
-    # print the scores
     print(scores_)
     # print mean score and standard deviation
     print(f'Mean score: {np.mean(scores_)} +/- {np.std(scores_)}')
 
-    # LOOCV
     scores_ = leave_one_out_cross_validation(knn, dataset_, seed=1)
 
-    # print the scores
     print(scores_)
     print(f'Mean score: {np.mean(scores_)} +/- {np.std(scores_)}')

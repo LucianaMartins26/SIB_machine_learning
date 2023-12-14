@@ -27,6 +27,7 @@ class SelectKBest:
     p: array, shape (n_features,)
         p-values of F-scores.
     """
+
     def __init__(self, score_func: Callable = f_classification, k: int = 10):
         """
         Select features according to the k highest scores.
@@ -97,13 +98,12 @@ class SelectKBest:
 
 
 if __name__ == '__main__':
-
     data = Dataset(X=np.array([[0, 2, 0, 3],
-                                  [0, 1, 4, 3],
-                                  [0, 1, 1, 3]]),
-                      y=np.array([0, 1, 0]),
-                      features=["f1", "f2", "f3", "f4"],
-                      label="y")
+                               [0, 1, 4, 3],
+                               [0, 1, 1, 3]]),
+                   y=np.array([0, 1, 0]),
+                   features=["f1", "f2", "f3", "f4"],
+                   label="y")
 
     selector = SelectKBest(k=2)
     selector = selector.fit(data)

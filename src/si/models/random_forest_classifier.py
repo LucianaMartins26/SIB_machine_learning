@@ -8,52 +8,73 @@ from SIB_machine_learning.src.si.models.decision_tree_classifier import Decision
 
 
 class RandomForestClassifier:
-    def __init__(self, n_estimators, max_features=None, min_sample_split=2, max_depth=None,
-                 mode: Literal['gini', 'entropy'] = 'gini', seed=None):
+
+    def __init__(self, n_estimators: int, min_sample_split: int,
+                 mode: Literal['gini', 'entropy'], seed: int, max_features: int = None, max_depth: int = None):
         self.n_estimators = n_estimators
         self.max_features = max_features
         self.min_sample_split = min_sample_split
         self.max_depth = max_depth
         self.mode = mode
         self.seed = seed
-
         self.trees = []
 
-    def _set_seed(self):
-        if self.seed is not None:
-            np.random.seed(self.seed)
+    def fit(self, dataset: Dataset):
+        # Sets the random seed
+        np.random.seed(self.seed)
 
-    def _get_bootstrap_dataset(self, dataset):
-        n_samples, n_features = dataset.shape()
-        indices = np.random.choice(n_samples, n_samples, replace=True)
-        features = np.random.choice(n_features, self.max_features, replace=False)
-        return Dataset(X=dataset.X[indices][:, features], y=dataset.y[indices])
+        # Defines self.max_features to be int(np.sqrt(n_features)) if None
+        if self.max_features is None:
+            self.max_features = int(np.sqrt(dataset.X.shape[1]))
 
-    def fit(self, dataset):
-        self._set_seed()
-        n_features = dataset.shape()[1]
-        self.max_features = int(np.sqrt(n_features)) if self.max_features is None else self.max_features
+        # Loop over the number of estimators to create individual trees
+        for i in range(self.n_estimators):
+            # Pick n_samples random samples from the dataset with replacement
+            random_indices = np.random.choice(dataset.X.shape[0], dataset.X.shape[0], replace=True)
 
-        for _ in range(self.n_estimators):
-            bootstrap_dataset = self._get_bootstrap_dataset(dataset)
-            tree = DecisionTreeClassifier(min_sample_split=self.min_sample_split,
-                                          max_depth=self.max_depth,
-                                          mode=self.mode)
-            tree.fit(bootstrap_dataset)
-            self.trees.append((bootstrap_dataset.features, tree))
+            # Pick self.max_features random features without replacement from the original dataset
+            random_features = np.random.choice(dataset.X.shape[1], self.max_features, replace=False)
 
+            # Create and train a decision tree with the bootstrap dataset
+            bootsrap_dataset = Dataset(dataset.X[random_indices][:, random_features], dataset.y[random_indices])
+            tree = DecisionTreeClassifier(self.min_sample_split, self.max_depth, self.mode)
+            tree.fit(bootsrap_dataset)
+
+            # Append a tuple containing the features used and the trained tree
+            self.trees.append((random_features, tree))
+
+        # Return itself (self)
         return self
 
-    def predict(self, dataset):
-        predictions = []
-        for _, tree in self.trees:
-            subset_X = dataset.X[:, tree.feature_idx]
-            tree_predictions = tree.predict(Dataset(X=subset_X))
-            predictions.append(tree_predictions)
+    def predict(self, dataset: Dataset):
+        # Get predictions for each tree using the respective set of features
+        predictions = np.array([tree.predict(Dataset(dataset.X[:, features])) for features, tree in self.trees])
+        # Get the most common predicted class for each sample
+        predictions = np.array([np.argmax(np.bincount(prediction)) for prediction in predictions.T])
+        # Return predictions
+        return predictions
 
-        predictions = np.array(predictions).T
-        return np.array([np.argmax(np.bincount(sample)) for sample in predictions])
+    def score(self, dataset: Dataset):
+        # Get predictions using the predict method
+        predictions = self.predict(dataset)
+        # Computes the accuracy between predicted and real values
+        accuracy_score = accuracy(dataset.y, predictions)
+        # Return accuracy
+        return accuracy_score
 
-    def score(self, dataset):
-        y_pred = self.predict(dataset)
-        return accuracy(dataset.y, y_pred)
+
+if __name__ == '__main__':
+    X_train = np.random.rand(100, 10)
+    y_train = np.random.randint(0, 2, 100)
+
+    X_test = np.random.rand(50, 10)
+    y_test = np.random.randint(0, 2, 50)
+
+    random_forest = RandomForestClassifier(n_estimators=10, max_features=None, min_sample_split=2, max_depth=None,
+                                           mode='gini', seed=42)
+
+    random_forest.fit(Dataset(X_train, y_train))
+
+    accuracy_test = random_forest.score(Dataset(X_test, y_test))
+
+    print("Accuracy on Test Set:", accuracy_test)

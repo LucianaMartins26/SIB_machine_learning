@@ -4,6 +4,7 @@ from typing import Callable, Tuple, Dict, Any
 import numpy as np
 
 from SIB_machine_learning.src.si.data.dataset import Dataset
+from SIB_machine_learning.src.si.models.logistic_regression import LogisticRegression
 from SIB_machine_learning.src.si.model_selection.cross_validation import k_fold_cross_validation
 
 
@@ -67,33 +68,24 @@ def grid_search_cv(model,
 
 
 if __name__ == '__main__':
-    # import dataset
-    from SIB_machine_learning.src.si.data.dataset import Dataset
-    from SIB_machine_learning.src.si.models.logistic_regression import LogisticRegression
 
-    # load and split the dataset
     dataset_ = Dataset.from_random(600, 100, 2)
 
-    # initialize the Logistic Regression model
     knn = LogisticRegression()
 
-    # parameter grid
     parameter_grid_ = {
         'l2_penalty': (1, 10),
         'alpha': (0.001, 0.0001),
         'max_iter': (1000, 2000)
     }
 
-    # cross validate the model
     results_ = grid_search_cv(knn,
                               dataset_,
                               hyperparameter_grid=parameter_grid_,
                               cv=3)
 
-    # print the results
     print(results_)
 
-    # get the best hyperparameters
     best_hyperparameters = results_['best_hyperparameters']
     print(f"Best hyperparameters: {best_hyperparameters}")
 

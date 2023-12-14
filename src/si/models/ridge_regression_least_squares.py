@@ -40,3 +40,23 @@ class RidgeRegressionLeastSquares:
         y_pred = self.predict(X)
         score = mse(y, y_pred)
         return score
+
+
+if __name__ == '__main__':
+    X_train = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
+    y_train = np.array([10, 20, 15, 25])
+
+    X_test = np.array([[1.5, 2.5], [3.5, 4.5]])
+    y_test = np.array([12, 22])
+
+    l2_penalty = 1.0
+    ridge_reg = RidgeRegressionLeastSquares(l2_penalty, scale=True)
+
+    ridge_reg.fit(X_train, y_train)
+
+    y_pred = ridge_reg.predict(X_test)
+
+    mse_value = ridge_reg.score(X_test, y_test)
+
+    print(f"Predicted values: {y_pred}")
+    print(f"Mean Squared Error: {mse_value}")

@@ -243,7 +243,7 @@ class Dataset:
 
         return self
 
-    def remove_from_index(self, index: int):
+    def remove_by_index(self, index: int):
         if index < 0 or index >= len(self.X):
             raise ValueError("Index is out of bounds")
 
@@ -291,4 +291,4 @@ if __name__ == '__main__':
     features = np.array(['a', 'b', 'c'])
     label = 'y'
     dataset = Dataset(X, y, features, label)
-    print(dataset.remove_from_index(1).X)
+    print(dataset.remove_by_index(1).X)

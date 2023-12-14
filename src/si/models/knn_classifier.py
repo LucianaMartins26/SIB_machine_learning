@@ -31,3 +31,25 @@ class KNNClassifier:
     def score(self, dataset: Dataset):
         y_pred = self.predict(dataset)
         return accuracy(dataset.y, y_pred)
+
+
+if __name__ == '__main__':
+    X_train = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
+    y_train = np.array([0, 1, 0, 1])
+    dataset_train = Dataset(X_train, y_train)
+
+    X_test = np.array([[1.5, 2.5], [3.5, 4.5]])
+    y_test = np.array([0, 1])
+    dataset_test = Dataset(X_test, y_test)
+
+    k = 2
+    knn_classifier = KNNClassifier(k, distance=euclidean_distance)
+
+    knn_classifier.fit(dataset_train)
+
+    y_pred = knn_classifier.predict(dataset_test)
+
+    accuracy_value = accuracy(dataset_test.y, y_pred)
+
+    print(f"Predicted labels: {y_pred}")
+    print(f"Accuracy: {accuracy_value}")

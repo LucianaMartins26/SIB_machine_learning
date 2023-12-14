@@ -2,6 +2,9 @@ import numpy as np
 
 from SIB_machine_learning.src.si.data.dataset import Dataset
 from SIB_machine_learning.src.si.metrics.accuracy import accuracy
+from SIB_machine_learning.src.si.model_selection.split import train_test_split
+from SIB_machine_learning.src.si.models.knn_classifier import KNNClassifier
+from SIB_machine_learning.src.si.models.logistic_regression import LogisticRegression
 
 
 class VotingClassifier:
@@ -104,11 +107,6 @@ class VotingClassifier:
 
 
 if __name__ == '__main__':
-    from SIB_machine_learning.src.si.data.dataset import Dataset
-    from SIB_machine_learning.src.si.model_selection.split import train_test_split
-    from SIB_machine_learning.src.si.models.knn_classifier import KNNClassifier
-    from SIB_machine_learning.src.si.models.logistic_regression import LogisticRegression
-
     dataset_ = Dataset.from_random(600, 100, 2)
     dataset_train, dataset_test = train_test_split(dataset_, test_size=0.2)
 
